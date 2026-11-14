@@ -1,0 +1,63 @@
+# Compilar, instalar y probar en dos teléfonos
+
+La app Formativa usa un teléfono A como Nodo servidor y un teléfono B como Panel cliente. Instala el mismo APK de depuración en ambos. Se necesita Android 8.0/API 26 o superior y que los dos teléfonos compartan una red Wi-Fi local o hotspot que permita comunicación entre clientes.
+
+La aplicación ahora muestra Login antes de Conexión. El proyecto Android Firebase y `app/google-services.json` ya están configurados en el equipo del estudiante; el JSON se ignora en Git. Email/Password ya está habilitado. Antes de iniciar sesión, crea una cuenta de prueba siguiendo [FIREBASE_LOGIN.md](FIREBASE_LOGIN.md).
+
+## 1. Abrir y compilar en Android Studio
+
+1. Abre la carpeta raíz del repositorio con **Open** en Android Studio; no crees otro proyecto ni abras solo `app/`.
+2. En **Settings → Build, Execution, Deployment → Build Tools → Gradle**, selecciona el JDK integrado de Android Studio (JDK 21 funciona con esta configuración). El proyecto genera bytecode Java 17.
+3. En SDK Manager instala Android SDK Platform 36 y Android SDK Build-Tools. La ruta del SDK se guarda en `local.properties`, archivo local que no se publica.
+4. Conserva `app/google-services.json` localmente y crea la cuenta de prueba indicada en [FIREBASE_LOGIN.md](FIREBASE_LOGIN.md). Sin el JSON local el Login no podrá autenticar ni entrar a Conexión.
+5. Pulsa **Sync Project with Gradle Files** y espera `BUILD SUCCESSFUL`.
+6. Selecciona **Build → Make Project** o, en la terminal de Android Studio, ejecuta:
+
+   ```powershell
+   .\gradlew.bat testDebugUnitTest assembleDebug
+   ```
+
+   La primera vez se descargan Gradle y dependencias. El APK aparece en `app/build/outputs/apk/debug/app-debug.apk`.
+
+## 2. Instalar el mismo APK en A y B
+
+Con USB y Android Studio:
+
+1. En cada teléfono habilita Opciones de desarrollador y **Depuración USB** (Ajustes → Acerca del teléfono → toca siete veces Número de compilación).
+2. Conecta A al PC, acepta la autorización en el teléfono, selecciónalo en Android Studio y pulsa **Run app**. Repite con B.
+
+También puedes instalar el APK directamente:
+
+1. Copia `app-debug.apk` a cada teléfono por cable o transferencia local.
+2. Abre el APK desde Archivos. Si Android lo solicita, habilita **Permitir desde esta fuente** para esa aplicación instaladora y confirma instalar.
+3. Esa autorización corresponde solo a la instalación manual; la app solicita únicamente sus permisos de funcionamiento.
+
+## 3. Iniciar la conexión
+
+1. Configura Firebase y crea una cuenta siguiendo [FIREBASE_LOGIN.md](FIREBASE_LOGIN.md); el mismo usuario puede iniciar sesión en los dos teléfonos.
+2. Conecta ambos teléfonos al mismo router Wi-Fi o conecta ambos al hotspot de uno de ellos. Evita redes con aislamiento de clientes. Mantén Comedero IoT visible en primer plano.
+3. Abre Comedero IoT en ambos teléfonos e inicia sesión con la cuenta Firebase.
+4. En A deja el rol **Nodo**, ingresa un código de seis dígitos y pulsa **Iniciar Nodo**. A muestra la IP local y queda esperando.
+5. En B elige **Panel**, escribe la IP mostrada por A y el mismo código de seis dígitos. Pulsa **Conectar**.
+6. Espera a que ambos indiquen **CONECTADO**. ACCESS_NETWORK_STATE se concede automáticamente como permiso normal y no muestra diálogo. Si Android 13 o superior muestra las notificaciones deshabilitadas, pulsa **Permitir notificaciones** y acepta para probar alertas; si lo niegas, la conexión debe seguir funcionando.
+7. Consulta los resultados y las evidencias históricas de P1–P7 en [PRUEBAS_FORMATIVA.md](PRUEBAS_FORMATIVA.md). P1–P7 ya se repitieron con el build que incluye Login; para reproducirlos, sigue la tabla de esa guía.
+
+## 4. Ejecutar P1–P7
+
+En P1–P7 conserva A como Nodo y B como Panel. Reinicia la conexión antes de pruebas que especifican códigos distintos o pérdida del enlace. Para P5 usa códigos de prueba `111111` y `222222`, nunca un secreto personal. En P6 corta el Wi-Fi del Panel o fuerza la detención de la app desde Ajustes; registra cuánto tarda en reflejarse la pérdida. En P7 deniega la notificación en Android 13+ y repite conexión, alerta y control.
+
+Completa manualmente teléfono/modelo, versión Android, red, fecha, resultado observado y evidencia. No marques una prueba como aprobada si no se ejecutó en los teléfonos.
+
+## Si Android Studio o el teléfono informa un error
+
+- Teléfono no listado: verifica cable de datos, autorización de depuración y controlador del fabricante en Windows.
+- `SDK location not found`: selecciona la ruta desde SDK Manager y sincroniza Gradle; no publiques tu `local.properties`.
+- Error de Java/Gradle: usa el JDK de Android Studio y revisa la salida completa de Build.
+- Conexión rechazada/esperando: confirma que ambos están en la misma red, que el router no aísla los equipos, que la IP del Nodo no cambió y que el puerto TCP 5050 está permitido en la red.
+- Código diferente: el socket puede conectar, pero los mensajes cifrados se descartan; vuelve a Conexión y utiliza el mismo código de prueba en ambos.
+
+Las pruebas físicas P1–P7 no se consideran realizadas por compilar, instalar o ejecutar pruebas unitarias.
+
+## Integración Formativa Unidad 3
+
+El modo ESP32, configuración de Wokwi, protección AES-GCM del enlace y reenvío USB por ADB están documentados en [FORMATIVA_UNIDAD_3.md](FORMATIVA_UNIDAD_3.md). Usa las carpetas nuevas `formativa-u3/wokwi/cama` y `formativa-u3/wokwi/comedero`; la configuración local `secrets.h` nunca se sube al repositorio.
